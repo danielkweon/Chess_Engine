@@ -82,27 +82,27 @@ def scoreBoard(board):
     for row in range(0,8):
         for col in range(0,8):
             if board[row][col] in "p":
-                score = score + pawnScore[row][col] + 1
+                score = score + pawnScore[row][col] + 5
             elif board[row][col] in "n":
-                score = score + 3 * knightScore[row][col] + 3
+                score = score + knightScore[row][col] + 30
             elif board[row][col] in "r":
-                score = score + 5 * rookScore[row][col] + 5
+                score = score + rookScore[row][col] + 50
             elif board[row][col] in "b":
-                score = score + 4 * bishopScores[row][col] + 4
+                score = score + bishopScores[row][col] + 40
             elif board[row][col] in "q":
-                score = score + 9 * queenScores[row][col] + 9
+                score = score + queenScores[row][col] + 90
             elif board[row][col] in "k":
                 score = score + kingScores[row][col]     
             elif board[row][col] in "P":
-                score = score - pawnScore[7 - row][col] - 1
+                score = score - pawnScore[7 - row][col] - 5
             elif board[row][col] in "N":
-                score = score - 3 * knightScore[7 - row][col] - 3
+                score = score - knightScore[7 - row][col] - 30
             elif board[row][col] in "R":
-                score = score - 5 * rookScore[7 - row][col] - 5
+                score = score - rookScore[7 - row][col] - 50
             elif board[row][col] in "B":
-                score = score - 4 * bishopScores[7 - row][col] - 4
+                score = score - bishopScores[7 - row][col] - 40
             elif board[row][col] in "Q":
-                score = score - 9 * queenScores[7 - row][col] - 9
+                score = score - queenScores[7 - row][col] - 90
             elif board[row][col] in "K":
                 score = score - kingScores[7 - row][col]    
     return score
@@ -809,6 +809,8 @@ def respond(board):
     respondMove = []
     for position in possibleMovesArray:
         possibleMovesDepth_2 = []
+        bestScoreDepth_2 = 1000
+        bestPositionDepth_2 = []
         for row in range(0,8):
             for col in range(0,8):
                 if position[row][col] in "PNRQKB":
@@ -841,7 +843,7 @@ def respond(board):
                 minmove = possibleBoards
         if bestMinScore < minscore:
             bestMinScore = minscore
-            respondMove = position
+            bestPositionDepth_2 = position
     #     printBoard(minmove, -1)
     #     print("lowest " + str(minscore))
     # printBoard(respondMove, -1)
@@ -884,6 +886,7 @@ while not gameEnded :
 
         board = respond(board)
         printBoard(board, movenumber)
+        print("score : " + str(scoreBoard(board)))
         movenumber +=  1
     else :
         print("INVALID MOVES try again")
