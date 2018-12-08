@@ -844,6 +844,7 @@ def respond(board):
         if bestMinScore < minscore:
             bestMinScore = minscore
             bestPositionDepth_2 = position
+            respondMove = position
     #     printBoard(minmove, -1)
     #     print("lowest " + str(minscore))
     # printBoard(respondMove, -1)
@@ -886,7 +887,7 @@ while not gameEnded :
 
         board = respond(board)
         printBoard(board, movenumber)
-        print("score : " + str(scoreBoard(board)))
+        #print("score : " + str(scoreBoard(board)))
         movenumber +=  1
     else :
         print("INVALID MOVES try again")
