@@ -10,32 +10,6 @@ Combinatorics Project
 import time
 import copy
 
-def printBoard(board, move):
-    print("Chess Board - Move " + str(move))
-    print("\t\ta\tb\tc\td\te\tf\tg\th\n")
-    print("\t\t_\t_\t_\t_\t_\t_\t_\t_\n")
-    for x in range(0,8):
-        row = board[x]
-        rowString = str(8-x) + '\t|\t'
-        for col in row:
-            rowString += col + '\t'
-        print(rowString + "\n")
-
-def move(board, fromMove, toMove):
-    cols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-    fromCol = 0
-    toCol = 0
-    for x in range(0,8):
-        if cols[x] == fromMove[0] :
-            fromCol = x
-        if cols[x] == toMove[0] :
-            toCol = x
-    if board[8 - int(toMove[1])][toCol] not in '.':
-        board[8 - int(toMove[1])][toCol] = '.'
-    piece = board[8 - int(fromMove[1])][fromCol]
-    board[8 - int(fromMove[1])][fromCol] = board[8 - int(toMove[1])][toCol]
-    board[8 - int(toMove[1])][toCol] = piece
-    return board
 
 pawnScore = [[0, 0, 0, 0, 0, 0, 0, 0], 
             [0, 0, 0, -4, -4, 0, 0, 0],
@@ -92,36 +66,72 @@ kingScores =    [[24, 24, 24, 16, 16, 6, 32, 32],
                 [0, 0, 0, 0, 0, 0, 0, 0]]
 
 
+def printBoard(board, move):
+    print("Chess Board - Move " + str(move))
+    print("\t\ta\tb\tc\td\te\tf\tg\th\n")
+    print("\t\t_\t_\t_\t_\t_\t_\t_\t_\n")
+    for x in range(0,8):
+        row = board[x]
+        rowString = str(8-x) + '\t|\t'
+        for col in row:
+            rowString += col + '\t'
+        print(rowString + "\n")
 
 def scoreBoard(board):
     score = 0
     for row in range(0,8):
         for col in range(0,8):
             if board[row][col] in "p":
-                score = score + pawnScore[row][col]
+                score = score + pawnScore[row][col] + 1
             elif board[row][col] in "n":
-                score = score + knightScore[row][col]
+                score = score + 3 * knightScore[row][col] + 3
             elif board[row][col] in "r":
-                score = score + rookScore[row][col]
+                score = score + 5 * rookScore[row][col] + 5
             elif board[row][col] in "b":
-                score = score + bishopScores[row][col]
+                score = score + 4 * bishopScores[row][col] + 4
             elif board[row][col] in "q":
-                score = score + queenScores[row][col]
+                score = score + 9 * queenScores[row][col] + 9
             elif board[row][col] in "k":
                 score = score + kingScores[row][col]     
             elif board[row][col] in "P":
-                score = score - pawnScore[7 - row][col]
+                score = score - pawnScore[7 - row][col] - 1
             elif board[row][col] in "N":
-                score = score - knightScore[7 - row][col]
+                score = score - 3 * knightScore[7 - row][col] - 3
             elif board[row][col] in "R":
-                score = score - rookScore[7 - row][col]
+                score = score - 5 * rookScore[7 - row][col] - 5
             elif board[row][col] in "B":
-                score = score - bishopScores[7 - row][col]
+                score = score - 4 * bishopScores[7 - row][col] - 4
             elif board[row][col] in "Q":
-                score = score - queenScores[7 - row][col] 
+                score = score - 9 * queenScores[7 - row][col] - 9
             elif board[row][col] in "K":
                 score = score - kingScores[7 - row][col]    
     return score
+
+def move(board, fromMove, toMove):
+    cols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    fromCol = 0
+    toCol = 0
+    for x in range(0,8):
+        if cols[x] == fromMove[0] :
+            fromCol = x
+        if cols[x] == toMove[0] :
+            toCol = x
+    printboard = False
+    if board[8 - int(toMove[1])][toCol] not in '.':
+        board[8 - int(toMove[1])][toCol] = '.'
+        printboard = True
+    piece = board[8 - int(fromMove[1])][fromCol]
+    board[8 - int(fromMove[1])][fromCol] = board[8 - int(toMove[1])][toCol]
+    board[8 - int(toMove[1])][toCol] = piece
+    if board[8 - int(toMove[1])][toCol] == 'P' and int(toMove[1]) == 8:
+        newPiece = input("What piece do you want? : ")
+        board[8 - int(toMove[1])][toCol] = newPiece
+    # if printboard and piece == 'p' and piece != 'P':
+    #     printBoard(board, -3)
+    #     print(str(scoreBoard(board)))
+    return board
+
+
 
 def possibleMoves(board, row, col, moves):
     cols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
@@ -241,6 +251,219 @@ def possibleMoves(board, row, col, moves):
                 blocked_piece = copyBoard[y][col] in 'PQKNRB'
             blocked_piece = blocked_piece or copyBoard[y][col] in 'pqnkbr'
             y = y - 1
+    if copyBoard[row][col] == 'b':
+        x = col - 1
+        y = row - 1
+        blocked_piece = False
+        while x >= 0 and y >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'pqnkbr'
+            x = x - 1     
+            y = y - 1       
+        x = col + 1
+        y = row - 1
+        blocked_piece = False
+        while x < 8 and y >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'pqnkbr'
+            x = x + 1     
+            y = y - 1
+        x = col - 1
+        y = row + 1
+        blocked_piece = False
+        while y < 8 and x >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'pqnkbr'
+            x = x - 1     
+            y = y + 1
+        x = col + 1
+        y = row + 1
+        blocked_piece = False
+        while y < 8 and x < 8 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'pqnkbr'
+            x = x + 1     
+            y = y + 1    
+    if copyBoard[row][col] == 'q':
+        x = col - 1
+        y = row - 1
+        blocked_piece = False
+        while x >= 0 and y >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'pqnkbr'
+            x = x - 1     
+            y = y - 1       
+        x = col + 1
+        y = row - 1
+        blocked_piece = False
+        while x < 8 and y >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'pqnkbr'
+            x = x + 1     
+            y = y - 1
+        x = col - 1
+        y = row + 1
+        blocked_piece = False
+        while y < 8 and x >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'pqnkbr'
+            x = x - 1     
+            y = y + 1
+        x = col + 1
+        y = row + 1
+        blocked_piece = False
+        while y < 8 and x < 8 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'pqnkbr'
+            x = x + 1     
+            y = y + 1
+        x = col - 1
+        blocked_piece = False
+        while x >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - row)
+            can_go = copyBoard[row][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[row][x] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[row][x] in 'pqnkbr'
+            x = x - 1
+        x = col + 1
+        blocked_piece = False
+        while x < 8 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - row)
+            can_go = copyBoard[row][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[row][x] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[row][x] in 'pqnkbr'
+            x = x + 1
+        y = row + 1
+        blocked_piece = False
+        while y < 8 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[col] + str(8 - y)
+            can_go = copyBoard[y][col] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][col] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[y][col] in 'pqnkbr'
+            y = y + 1
+            # printBoard(move(copy.deepcopy(board), fromPos, toPos), -1)
+            # print(str(scoreBoard(move(copy.deepcopy(board), fromPos, toPos))))
+        y = row - 1
+        blocked_piece = False
+        while y >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[col] + str(8 - y)
+            can_go = copyBoard[y][col] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][col] in 'PQKNRB'
+            blocked_piece = blocked_piece or copyBoard[y][col] in 'pqnkbr'
+            y = y - 1 
+    if copyBoard[row][col] == 'k':
+        x = col - 1
+        y = row - 1
+        if x >= 0 and y >= 0 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))    
+        x = col + 1
+        y = row - 1
+        if x < 8 and y >= 0 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        x = col - 1
+        y = row + 1
+        if y < 8 and x >= 0  :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        x = col + 1
+        y = row + 1
+        if y < 8 and x < 8 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        x = col - 1
+        if x >= 0 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - row)
+            can_go = copyBoard[row][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        x = col + 1
+        if x < 8 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - row)
+            can_go = copyBoard[row][x] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        y = row + 1
+        if y < 8 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[col] + str(8 - y)
+            can_go = copyBoard[y][col] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        y = row - 1
+        if y >= 0 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[col] + str(8 - y)
+            can_go = copyBoard[y][col] in '.PQKNRB'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
     return moves
 
 def possibleMovesOpponent(board, row, col, moves):
@@ -361,6 +584,219 @@ def possibleMovesOpponent(board, row, col, moves):
                 blocked_piece = copyBoard[y][col] in 'pqnkbr'
             blocked_piece = blocked_piece or copyBoard[y][col] in 'PQKNRB'
             y = y - 1
+    if copyBoard[row][col] == 'B':
+        x = col - 1
+        y = row - 1
+        blocked_piece = False
+        while x >= 0 and y >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'PQKNRB'
+            x = x - 1     
+            y = y - 1       
+        x = col + 1
+        y = row - 1
+        blocked_piece = False
+        while x < 8 and y >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'PQKNRB'
+            x = x + 1     
+            y = y - 1
+        x = col - 1
+        y = row + 1
+        blocked_piece = False
+        while y < 8 and x >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'PQKNRB'
+            x = x - 1     
+            y = y + 1
+        x = col + 1
+        y = row + 1
+        blocked_piece = False
+        while y < 8 and x < 8 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'PQKNRB'
+            x = x + 1     
+            y = y + 1  
+    if copyBoard[row][col] == 'Q':
+        x = col - 1
+        y = row - 1
+        blocked_piece = False
+        while x >= 0 and y >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'PQKNRB'
+            x = x - 1     
+            y = y - 1       
+        x = col + 1
+        y = row - 1
+        blocked_piece = False
+        while x < 8 and y >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'PQKNRB'
+            x = x + 1     
+            y = y - 1
+        x = col - 1
+        y = row + 1
+        blocked_piece = False
+        while y < 8 and x >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'PQKNRB'
+            x = x - 1     
+            y = y + 1
+        x = col + 1
+        y = row + 1
+        blocked_piece = False
+        while y < 8 and x < 8 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][x] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[y][x] in 'PQKNRB'
+            x = x + 1     
+            y = y + 1
+        x = col - 1
+        blocked_piece = False
+        while x >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - row)
+            can_go = copyBoard[row][x] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[row][x] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[row][x] in 'PQKNRB'
+            x = x - 1
+        x = col + 1
+        blocked_piece = False
+        while x < 8 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - row)
+            can_go = copyBoard[row][x] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[row][x] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[row][x] in 'PQKNRB'
+            x = x + 1
+        y = row + 1
+        blocked_piece = False
+        while y < 8 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[col] + str(8 - y)
+            can_go = copyBoard[y][col] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][col] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[y][col] in 'PQKNRB'
+            y = y + 1
+            # printBoard(move(copy.deepcopy(board), fromPos, toPos), -1)
+            # print(str(scoreBoard(move(copy.deepcopy(board), fromPos, toPos))))
+        y = row - 1
+        blocked_piece = False
+        while y >= 0 and not blocked_piece :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[col] + str(8 - y)
+            can_go = copyBoard[y][col] in opponentPieces
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+                blocked_piece = copyBoard[y][col] in 'pqnkbr'
+            blocked_piece = blocked_piece or copyBoard[y][col] in 'PQKNRB'
+            y = y - 1 
+    if copyBoard[row][col] == 'K':
+        x = col - 1
+        y = row - 1
+        if x >= 0 and y >= 0 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.pbnkqr'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))    
+        x = col + 1
+        y = row - 1
+        if x < 8 and y >= 0 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.pbnkqr'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        x = col - 1
+        y = row + 1
+        if y < 8 and x >= 0  :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.pbnkqr'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        x = col + 1
+        y = row + 1
+        if y < 8 and x < 8 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - y)
+            can_go = copyBoard[y][x] in '.pbnkqr'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        x = col - 1
+        if x >= 0 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - row)
+            can_go = copyBoard[row][x] in '.pbnkqr'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        x = col + 1
+        if x < 8 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[x] + str(8 - row)
+            can_go = copyBoard[row][x] in '.pbnkqr'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        y = row + 1
+        if y < 8 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[col] + str(8 - y)
+            can_go = copyBoard[y][col] in '.pbnkqr'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
+        y = row - 1
+        if y >= 0 :
+            fromPos = cols[col] + str(8 - row)
+            toPos = cols[col] + str(8 - y)
+            can_go = copyBoard[y][col] in '.pbnkqr'
+            if can_go :
+                moves.append(move(copy.deepcopy(board), fromPos, toPos))
     return moves
 
 def respond(board):
@@ -377,6 +813,22 @@ def respond(board):
             for col in range(0,8):
                 if position[row][col] in "PNRQKB":
                     possibleMovesOpponent(position, row, col, possibleMovesDepth_2)
+
+                    """ higher depth """
+                    # for positionDepth_2 in possibleMovesDepth_2:
+                    #     possibleMovesDepth_3 = []
+                    #     for rowDepth_3 in range(0,8):
+                    #         for colDepth_3 in range(0,8):
+                    #             if positionDepth_2[rowDepth_3][colDepth_3] in "pnrqkb":
+                    #                 possibleMoves(positionDepth_2, rowDepth_3, colDepth_3, possibleMovesDepth_3)
+
+                    #                 for positionDepth_3 in possibleMovesDepth_3:
+                    #                     possibleMovesDepth_4 = []
+                    #                     for rowDepth_4 in range(0,8):
+                    #                         for colDepth_4 in range(0,8):
+                    #                             if positionDepth_3[rowDepth_4][colDepth_4] in "PNRQKB":
+                    #                                 possibleMoves(positionDepth_3, rowDepth_4, colDepth_4, possibleMovesDepth_4)
+
         minscore = 1000
         minmove = []
         #scorestr = " "
