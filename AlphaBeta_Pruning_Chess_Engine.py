@@ -3,7 +3,7 @@
 @author: Daniel Kweon, Lin Chen
 
 Alpha Beta Pruning Chess Engine
-Combinatorics Project
+Combinatorics Project YAY
 
 """
 
